@@ -20,6 +20,7 @@ import java.util.Random;
 @Api(tags = "医院设置管理")
 @RestController
 @RequestMapping("/admin/hosp/hospitalSet")
+@CrossOrigin
 public class HospitalSetController {
     //注入service
     @Autowired
@@ -58,10 +59,10 @@ public class HospitalSetController {
         QueryWrapper<HospitalSet> wrapper = new QueryWrapper<>();
         String hosname = hospitalSetQueryVo.getHosname();//医院名称
         String hoscode = hospitalSetQueryVo.getHoscode();//医院编号
-        if (StringUtils.isEmpty(hosname)){
+        if (!StringUtils.isEmpty(hosname)){
             wrapper.like("hosname",hospitalSetQueryVo.getHosname());
         }
-        if (StringUtils.isEmpty(hoscode)){
+        if (!StringUtils.isEmpty(hoscode)){
             wrapper.eq("hoscode",hospitalSetQueryVo.getHoscode());
         }
 

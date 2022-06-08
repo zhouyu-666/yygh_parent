@@ -1,0 +1,8 @@
+package com.zy.yygh.cmn.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.zy.yygh.model.cmn.Dict;
+
+public interface DictMapper extends BaseMapper<Dict> {
+
+}
