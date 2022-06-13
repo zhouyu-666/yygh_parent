@@ -8,9 +8,12 @@ import com.zy.yygh.common.utils.MD5;
 import com.zy.yygh.hosp.service.DepartmentService;
 import com.zy.yygh.hosp.service.HospitalService;
 import com.zy.yygh.hosp.service.HospitalSetService;
+import com.zy.yygh.hosp.service.ScheduleService;
 import com.zy.yygh.model.hosp.Department;
 import com.zy.yygh.model.hosp.Hospital;
+import com.zy.yygh.model.hosp.Schedule;
 import com.zy.yygh.vo.hosp.DepartmentQueryVo;
+import com.zy.yygh.vo.hosp.ScheduleQueryVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,13 +40,73 @@ public class ApiController {
     @Autowired
     private DepartmentService departmentService;
 
-//    //上传排班接口
-//    @PostMapping("saveSchedule")
-//    public Result saveSchedule(){
-//
-//    }
+    @Autowired
+    private ScheduleService scheduleService;
+
+    //删除排班接口
+    @ApiOperation(value = "删除排班接口")
+    @PostMapping("schedule/remove")
+    public Result remove(HttpServletRequest request){
+        //获取到传递过来的医院信息
+        Map<String, String[]> requestMap = request.getParameterMap();
+        Map<String, Object> paramMap = HttpRequestHelper.switchMap(requestMap);
+
+        //医院编号
+        String hoscode = paramMap.get("hoscode").toString();
+        //排班编号
+        String hosScheduleId = paramMap.get("hosScheduleId").toString();
+
+        //1.获取医院系统传递过来的签名，签名进行MD5加密
+        extracted(paramMap, hoscode);
+
+        scheduleService.remove(hoscode,hosScheduleId);
+        return Result.ok();
+
+    }
+
+    //查询排班接口
+    @ApiOperation(value = "查询排班接口")
+    @PostMapping("schedule/list")
+    public Result findSchedule(HttpServletRequest request){
+        //获取到传递过来的医院信息
+        Map<String, String[]> requestMap = request.getParameterMap();
+        Map<String, Object> paramMap = HttpRequestHelper.switchMap(requestMap);
+        //医院编号
+        String hoscode = paramMap.get("hoscode").toString();
+        //科室编号
+        String depcode = (String) paramMap.get("depcode");
+        //当前页 和每页的记录数
+        int page = StringUtils.isEmpty(paramMap.get("page")) ? 1 : Integer.parseInt(paramMap.get("page").toString());
+        int limit = StringUtils.isEmpty(paramMap.get("limit")) ? 1 : Integer.parseInt(paramMap.get("limit").toString());
+        //1.获取医院系统传递过来的签名，签名进行MD5加密
+        extracted(paramMap, hoscode);
+
+        ScheduleQueryVo scheduleQueryVo=new ScheduleQueryVo();
+        scheduleQueryVo.setHoscode(hoscode);
+        scheduleQueryVo.setDepcode(depcode);
+
+        //调用service方法
+        Page<Schedule> pageModel =scheduleService.findPageSchedule(page,limit,scheduleQueryVo);
+        return Result.ok(pageModel);
+    }
+
+    //上传排班接口
+    @ApiOperation(value = "上传排班接口")
+    @PostMapping("saveSchedule")
+    public Result saveSchedule(HttpServletRequest request){
+        //获取到传递过来的医院信息
+        Map<String, String[]> requestMap = request.getParameterMap();
+        Map<String, Object> paramMap = HttpRequestHelper.switchMap(requestMap);
+        //获取医院编号
+        String hoscode = paramMap.get("hoscode").toString();
+        //1.获取医院系统传递过来的签名，签名进行MD5加密
+        extracted(paramMap, hoscode);
+        scheduleService.save(paramMap);
+        return Result.ok();
+    }
 
     //删除科室的接口
+    @ApiOperation(value = "删除科室的接口")
     @PostMapping("department/remove")
     public Result removeDepartment(HttpServletRequest request){
         //获取到传递过来的医院信息
@@ -60,6 +123,7 @@ public class ApiController {
     }
 
     //查询科室的接口
+    @ApiOperation(value = "查询科室的接口")
     @PostMapping("department/list")
     public Result findDepartment(HttpServletRequest request) {
         //获取到传递过来的医院信息
@@ -84,6 +148,7 @@ public class ApiController {
 
 
     //上传科室接口
+    @ApiOperation(value = "上传科室接口")
     @PostMapping("saveDepartment")
     public Result saveDepartment(HttpServletRequest request) {
         //获取到传递过来的医院信息
@@ -100,7 +165,8 @@ public class ApiController {
     }
 
 
-    //查询医院
+    //查询医院接口
+    @ApiOperation(value = "查询医院接口")
     @PostMapping("hospital/show")
     public Result getHospital(HttpServletRequest request) {
         //获取到传递过来的医院信息
